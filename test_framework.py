@@ -46,11 +46,11 @@ def create_test_method(test_case):
         for command in test_case["commands"]:
             config_file = command["config"]
             config_path = os.path.join(example_dir, config_file)
-            logging.info("Executing command: vcast %s", config_path)
+            logging.info("Executing command: vcast %s --test-mode", config_path)
             
             start_time = time.time()
             result = subprocess.run(
-                ["vcast", config_path],
+                ["vcast", config_path, "--test-mode"],
                 cwd=example_dir,
                 capture_output=True,
                 text=True
