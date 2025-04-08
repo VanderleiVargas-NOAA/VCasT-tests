@@ -5,6 +5,7 @@ import subprocess
 import filecmp
 import time
 import logging
+import difflib
 
 # Configure logging for detailed output during tests.
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
@@ -57,12 +58,28 @@ def create_test_method(test_case):
                     os.path.exists(output_path),
                     msg=f"Output file '{output_path}' missing in test case '{test_case['name']}'."
                 )
-                files_equal = filecmp.cmp(expected_path, output_path, shallow=False)
-                self.assertTrue(
-                    files_equal,
-                    msg=f"File '{output_file}' in test case '{test_case['name']}' does not match expected output."
-                )
-                logging.info("File '%s' matches expected output.", output_file)
+                
+                if not filecmp.cmp(expected_path, output_path, shallow=False):
+                    diff_text = ""
+                    try:
+                        with open(expected_path, 'r', encoding='utf8') as f:
+                            expected_lines = f.readlines()
+                        with open(output_path, 'r', encoding='utf8') as f:
+                            output_lines = f.readlines()
+                        diff = difflib.unified_diff(
+                            expected_lines, output_lines,
+                            fromfile='expected',
+                            tofile='actual',
+                            lineterm=''
+                        )
+                        diff_text = '\n'.join(diff)
+                    except Exception:
+                        diff_text = "Binary files differ or files cannot be read as text."
+                    self.fail(
+                        f"File '{output_file}' in test case '{test_case['name']}' does not match expected output.\nDiff:\n{diff_text}"
+                    )
+                else:
+                    logging.info("File '%s' matches expected output.", output_file)
                 created_files.append(output_path)
         
         # Remove all created output files for this test case.
@@ -88,7 +105,7 @@ def load_tests(loader, tests, pattern):
         test_spec = yaml.safe_load(f)
     # Dynamically create a test method for each test case.
     for test_case in test_spec["tests"]:
-        # Create a valid method name (replace spaces with underscores)
+        # Create a valid method name (replace spaces with underscores).
         test_name = "test_" + test_case["name"].replace(" ", "_")
         setattr(DynamicTestFramework, test_name, create_test_method(test_case))
     return loader.loadTestsFromTestCase(DynamicTestFramework)
