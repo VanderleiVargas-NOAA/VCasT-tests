@@ -10,9 +10,30 @@ import difflib
 # Configure logging for detailed output during tests.
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 
+
+def get_file_diff(expected_path, output_path):
+    """
+    Compute a unified diff between expected and output files, assuming they are text.
+    If the files cannot be read as text, return a message indicating that.
+    """
+    try:
+        with open(expected_path, "r", encoding="utf8", errors="replace") as f:
+            expected_lines = f.readlines()
+        with open(output_path, "r", encoding="utf8", errors="replace") as f:
+            output_lines = f.readlines()
+        diff = list(difflib.unified_diff(expected_lines, output_lines,
+                                         fromfile="expected", tofile="output", lineterm=""))
+        if diff:
+            return "\n".join(diff)
+        else:
+            return "No differences found."
+    except Exception as e:
+        return f"Could not compute diff: {e}"
+
+
 def create_test_method(test_case):
     """
-    Creates a test method function for a given test case.
+    Creates a test method for a given test case.
     """
     def test_method(self):
         # Resolve the absolute path to the example directory.
@@ -21,7 +42,7 @@ def create_test_method(test_case):
         
         created_files = []
         
-        # Loop through each command defined in the test case.
+        # Loop through each command defined for this test case.
         for command in test_case["commands"]:
             config_file = command["config"]
             config_path = os.path.join(example_dir, config_file)
@@ -58,57 +79,52 @@ def create_test_method(test_case):
                     os.path.exists(output_path),
                     msg=f"Output file '{output_path}' missing in test case '{test_case['name']}'."
                 )
-                
-                if not filecmp.cmp(expected_path, output_path, shallow=False):
-                    diff_text = ""
-                    try:
-                        with open(expected_path, 'r', encoding='utf8') as f:
-                            expected_lines = f.readlines()
-                        with open(output_path, 'r', encoding='utf8') as f:
-                            output_lines = f.readlines()
-                        diff = difflib.unified_diff(
-                            expected_lines, output_lines,
-                            fromfile='expected',
-                            tofile='actual',
-                            lineterm=''
-                        )
-                        diff_text = '\n'.join(diff)
-                    except Exception:
-                        diff_text = "Binary files differ or files cannot be read as text."
-                    self.fail(
-                        f"File '{output_file}' in test case '{test_case['name']}' does not match expected output.\nDiff:\n{diff_text}"
-                    )
+                files_equal = filecmp.cmp(expected_path, output_path, shallow=False)
+                if not files_equal:
+                    diff_output = get_file_diff(expected_path, output_path)
+                    self.fail(f"File '{output_file}' in test case '{test_case['name']}' does not match expected output. Diff:\n{diff_output}")
                 else:
                     logging.info("File '%s' matches expected output.", output_file)
                 created_files.append(output_path)
-        
-        # Remove all created output files for this test case.
-        for filepath in created_files:
+                
+        # Accumulate created files for later cleanup.
+        self.__class__.all_created_files.extend(created_files)
+    return test_method
+
+
+class DynamicTestFramework(unittest.TestCase):
+    """
+    A test class with dynamically-added test methods.
+    """
+    @classmethod
+    def setUpClass(cls):
+        cls.all_created_files = []
+
+    # Instead of cleaning up in each test, clean up after all tests have run.
+    @classmethod
+    def tearDownClass(cls):
+        logging.info("Cleaning up generated output files...")
+        for filepath in cls.all_created_files:
             try:
                 if os.path.exists(filepath):
                     os.remove(filepath)
                     logging.info("Removed output file: %s", filepath)
             except Exception as err:
                 logging.error("Failed to remove output file %s: %s", filepath, err)
-    return test_method
 
-class DynamicTestFramework(unittest.TestCase):
-    """
-    A test class that will have individual test methods added dynamically.
-    """
-    pass
 
 def load_tests(loader, tests, pattern):
-    # Load test specification from YAML file.
+    # Load test specification from the YAML file.
     test_yaml = os.path.join(os.path.dirname(__file__), "test_cases.yaml")
     with open(test_yaml, "r") as f:
         test_spec = yaml.safe_load(f)
     # Dynamically create a test method for each test case.
     for test_case in test_spec["tests"]:
-        # Create a valid method name (replace spaces with underscores).
+        # Create a valid method name (replace spaces with underscores)
         test_name = "test_" + test_case["name"].replace(" ", "_")
         setattr(DynamicTestFramework, test_name, create_test_method(test_case))
     return loader.loadTestsFromTestCase(DynamicTestFramework)
+
 
 if __name__ == "__main__":
     unittest.main()
