@@ -1,0 +1,48 @@
+input_stat_folder: ./stats
+line_type: nbrcnt # fho, ctc, cts, cnt, mctc, mpr, sl1l2, sal1l2, vl1l2, vcnt, mcts, 
+               # pct, pstd, pjc, prc, eclv, val1l2, seeps_mpr, seeps
+
+date_column: "fcst_valid_beg"   # fcst_valid_beg, fcst_valid_end, obs_valid_beg, obs_valid_end
+start_date: "2024-05-01_00:00:00"  # Start date of the data processing
+end_date: "2024-06-10_12:00:00"    # End date of the data processing
+
+# Threshold filtering (min-max for multiple numerical columns)
+thresholds:
+  #rmse: [1, 2]  # Min, Max
+
+# String filtering (list of allowed values for each column)
+string_filters:
+  model: ["NAMnest_mem000"]
+  fcst_var: ["REFC"]
+  fcst_lead: ['000000', '010000', '020000', '030000', '040000', '050000', '060000', '070000', '080000', '090000',
+ '100000', '110000', '120000', '130000', '140000', '150000', '160000', '170000', '180000', '190000',
+ '200000', '210000', '220000', '230000', '240000', '250000', '260000', '270000', '280000', '290000',
+ '300000', '310000', '320000', '330000', '340000', '350000', '360000', '370000', '380000', '390000',
+ '400000', '410000', '420000', '430000', '440000', '450000', '460000', '470000', '480000', '490000',
+ '500000', '510000', '520000', '530000', '540000', '550000', '560000', '570000', '580000', '590000',
+ '600000']
+
+  vx_mask: ["CONUS"]
+  fcst_thresh: [">=20",">=30",">=40",">=50"]
+  interp_pnts: ["81","361","729","25","9"]
+ #,"060000","090000","120000"]
+  # fcst_thresh: [">0.0"] #,"060000","090000","120000"]
+
+  #fcst_lev: ["0,*,*"]
+
+# Column filtering (Keep only these columns; leave empty to keep all)
+columns_to_keep: #["fcst_valid_beg", "model", "fcst_thresh", "obs_thresh", "line_type"]
+stat_vars: ["fss"]
+
+
+# Whether to save the reformatted DataFrame to a file
+reformat_file: true  # Set to false to disable writing the file
+output_reformat_file: "./filtered_output.data"  # Path to save output
+
+# Extract variables for plotting
+output_file: true  # Set to false to disable writing the file
+output_plot_file: "./vars.data"  # Path to save output
+
+aggregate: true
+group_by: ["model","fcst_var","fcst_lead","fcst_thresh","interp_pnts"]
+output_agg_file: "./agg.data"  # Path to save output

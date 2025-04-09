@@ -46,6 +46,14 @@ tests:
       - config: "plot.yaml"
         outputs:
           stat_FBIAS_APCP.png: "expected_outputs/stat_FBIAS_APCP.png"
+  - name: "MET FSS"
+    example_dir: "tests/examples/MET/fss"
+    commands:
+      - config: "NBRCNT.yaml"
+        outputs:
+          filtered_output.data: "expected_outputs/filtered_output.data"
+          vars.data: "expected_outputs/vars.data"
+          agg.data: "expected_outputs/agg.data"
   - name: "VCasT all stats 0001"
     example_dir: "tests/examples/Stats/all_stats-0001"
     commands:

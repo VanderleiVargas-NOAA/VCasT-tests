@@ -1,0 +1,68 @@
+start_date: "2024-05-01_00:00:00"  # Start date of the data processing
+end_date: "2024-06-02_12:00:00"
+interval_hours: "1"                # Interval for processing (e.g., hourly, 6-hourly)
+
+average: false
+scale: 1
+
+plot_type: line
+
+fcst_var: 
+
+vars:
+  - fss: "./agg_20_9.data"
+  - fss: "./agg_20_25.data"
+  - fss: "./agg_20_81.data"
+  - fss: "./agg_20_361.data"
+  - fss: "./agg_20_729.data"
+
+unique:  
+
+# General plot parameters
+plot_title: "REFC >= 20 dBZ"
+legend_title: "Stat"
+labels:
+  - "Interp_points - 9"
+  - "Interp_points - 25"
+  - "Interp_points - 81"
+  - "Interp_points - 361"
+  - "Interp_points - 729"
+    
+line_color:
+  - "red"
+  - "purple"
+  - "green"
+  - "orange"
+  - "black"
+
+line_marker:
+  - "o"
+  - "x"
+  - "^"
+  - "^"
+  - "o"
+
+line_type:
+  - "-"
+  - "-."
+  - "--"
+  - "-"
+  - "-."
+
+line_width:
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+
+output_filename: fss_REFC20.png
+
+# Line plot variables
+x_label: "Lead Time"
+y_label: "FSS"
+ylim: [0, 1]
+xlim: [0,60]       # Adjust as needed for your dataset
+grid: true
+yticks:   # Customize tick marks if needed
+xticks: [0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60]  # Customize tick marks if needed
