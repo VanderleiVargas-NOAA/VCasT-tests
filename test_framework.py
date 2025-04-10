@@ -85,7 +85,7 @@ def run_test_case(test_case):
                     diff = get_file_diff(expected_path, output_path)
                     assert False, f"Text/binary file mismatch:\n{diff}"
 
-@pytest.mark.parametrize("test_case", yaml.safe_load(open("test_cases.yaml"))["tests"])
+@pytest.mark.parametrize("test_case", yaml.safe_load(open("tests/test_cases.yaml"))["tests"])
 def test_dynamic_cases(test_case):
     run_test_case(test_case)
 
