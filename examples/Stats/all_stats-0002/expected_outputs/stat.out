@@ -1,2 +1,2 @@
-date	lead_time	rmse	bias	25p	50p	75p	IQR	LW	UW	mae	gss	fbias	pod	far	csi	corr	stdev	sr
+date	fcst_lead	rmse	bias	25p	50p	75p	IQR	LW	UW	mae	gss	fbias	pod	far	csi	corr	stdev	sr
 2024-04-01 02:00:00	1	0.415834018	0.0214510831	-0.2997436523	-0.1122436523	0.2002563476	0.5	-1.0497436523	0.9502563476	0.3199587603	0.0	nan	nan	1.0	0.0	0.998121363	6.4379403822	0.0
